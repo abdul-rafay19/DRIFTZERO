@@ -787,3 +787,89 @@ export interface RecoveryVerificationInput {
   /** The full P12 RecoveryResult to be verified. */
   recoveryResult: RecoveryResult;
 }
+
+// ---------------------------------------------------------------------------
+// P14 — Unexpected Change Detection types
+// ---------------------------------------------------------------------------
+
+/** How a file actually changed in the workspace. */
+export type ActualChangeType = "ADDED" | "MODIFIED" | "DELETED" | "RENAMED";
+
+/** A file change detected in the actual workspace diff. */
+export interface ActualChange {
+  filePath: string;
+  changeType: ActualChangeType;
+  /** For RENAMED: original path. */
+  oldPath?: string;
+}
+
+/**
+ * The migration phase that authorized an expected change.
+ * P8 affectedFiles alone does NOT constitute authorization.
+ */
+export type ExpectedChangeSource = "P9" | "P10" | "P12";
+
+/** A change that DRIFTZERO explicitly authorized during migration/recovery. */
+export interface ExpectedChange {
+  filePath: string;
+  source: ExpectedChangeSource;
+  relatedStepIds: string[];
+}
+
+/** Why a change is considered unexpected. */
+export type UnexpectedChangeReason =
+  | "NOT_AUTHORIZED"
+  | "NOT_IN_MIGRATION_SCOPE"
+  | "UNEXPECTED_DELETE"
+  | "UNEXPECTED_CREATE"
+  | "UNEXPECTED_RENAME";
+
+/** A file change that has no authorized migration evidence. */
+export interface UnexpectedChange {
+  filePath: string;
+  changeType: ActualChangeType;
+  reason: UnexpectedChangeReason;
+  evidence: string[];
+}
+
+/** Summary counts for the detection result. */
+export interface UnexpectedChangeSummary {
+  totalActualChanges: number;
+  totalExpectedChanges: number;
+  totalUnexpectedChanges: number;
+  added: number;
+  modified: number;
+  deleted: number;
+  renamed: number;
+}
+
+/**
+ * Result of the P14 Unexpected Change Detection engine.
+ *
+ * CLEAN             — all actual changes are authorized
+ * UNEXPECTED_CHANGES — one or more unauthorized changes detected
+ * FAILED            — infrastructure/input error prevented reliable detection
+ */
+export type UnexpectedChangeDetectionStatus =
+  | "CLEAN"
+  | "UNEXPECTED_CHANGES"
+  | "FAILED";
+
+/** Full result of a P14 detection run. */
+export interface UnexpectedChangeDetectionResult {
+  workspaceId: string;
+  status: UnexpectedChangeDetectionStatus;
+  actualChanges: ActualChange[];
+  expectedChanges: ExpectedChange[];
+  unexpectedChanges: UnexpectedChange[];
+  summary: UnexpectedChangeSummary;
+}
+
+/** Input to the P14 Unexpected Change Detection engine. */
+export interface UnexpectedChangeDetectionInput {
+  workspace: Workspace;
+  migrationPlan: MigrationPlan;
+  migrationResult: CodeMigrationResult;
+  testGenerationResult?: TestGenerationResult;
+  recoveryResult?: RecoveryResult;
+}
