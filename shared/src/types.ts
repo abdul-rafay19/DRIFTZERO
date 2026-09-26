@@ -357,6 +357,92 @@ export interface ImpactPreviewInput {
   riskScore: RiskScoreResult;
 }
 
+// ---------------------------------------------------------------------------
+// Migration Planner types (P8)
+// ---------------------------------------------------------------------------
+
+export type StepCategory =
+  | "DEPENDENCY"
+  | "API"
+  | "MIDDLEWARE"
+  | "ROUTE"
+  | "CONTROLLER"
+  | "TEST"
+  | "CONFIG"
+  | "OTHER";
+
+/** A single ordered, traceable step in the migration plan. */
+export interface MigrationStep {
+  /** Deterministic sequential ID, e.g. STEP-001. */
+  id: string;
+  /** 1-based execution order. */
+  order: number;
+  title: string;
+  description: string;
+  category: StepCategory;
+  /** Relative file paths from P5 that this step will modify. */
+  affectedFiles: string[];
+  /** P4 BreakingChange/BehaviorChange IDs related to this step. */
+  relatedChangeIds: string[];
+  /** P4 MigrationRequirement IDs related to this step. */
+  relatedRequirementIds: string[];
+  /** Human-readable rationale for this step. */
+  reason: string;
+  /** Risk level for this individual step. */
+  risk: RiskLevel;
+  /** IDs of MigrationSteps that must complete before this one. */
+  dependencies: string[];
+}
+
+/** A required condition that must be satisfied before migration begins. */
+export interface MigrationPrerequisite {
+  id: string;
+  title: string;
+  description: string;
+  /** Traceability references (P4 IDs, P5 file paths, etc.). */
+  evidence: string[];
+  mandatory: boolean;
+}
+
+/** A post-migration validation requirement. P9/validation engine will execute these. */
+export interface ValidationRequirement {
+  id: string;
+  title: string;
+  description: string;
+  /** Step IDs this requirement validates. */
+  relatedStepIds: string[];
+}
+
+/** A fully planned, ordered migration with DAG-validated step dependencies. */
+export interface MigrationPlan {
+  packageName: string;
+  sourceVersion: string;
+  targetVersion: string;
+  /** High-level goal of this migration. */
+  objective: string;
+  prerequisites: MigrationPrerequisite[];
+  /** Ordered steps forming a valid DAG. */
+  steps: MigrationStep[];
+  validationRequirements: ValidationRequirement[];
+  /** Human-readable areas affected (from P5/P7). */
+  affectedAreas: string[];
+  /** P6 risk — passed through unchanged. */
+  risk: {
+    score: number;
+    level: RiskLevel;
+  };
+  /** ISO timestamp when the plan was generated. */
+  generatedAt: string;
+}
+
+/** Input to the Migration Planner. */
+export interface MigrationPlannerInput {
+  changeAnalysis: ChangeAnalysisResult;
+  impactAnalysis: ImpactAnalysisResult;
+  riskScore: RiskScoreResult;
+  impactPreview: ImpactPreviewResult;
+}
+
 export interface CreateMigrationRequest {
   repoUrl: string;
   sourceVersion: string;
