@@ -873,3 +873,105 @@ export interface UnexpectedChangeDetectionInput {
   testGenerationResult?: TestGenerationResult;
   recoveryResult?: RecoveryResult;
 }
+
+// ---------------------------------------------------------------------------
+// P15 — Security Engine types
+// ---------------------------------------------------------------------------
+
+/**
+ * The overall status of a P15 security scan.
+ *
+ * CLEAN    — all deterministic checks ran; no findings
+ * FINDINGS — one or more security findings exist
+ * PARTIAL  — deterministic checks completed but optional component (Bob or
+ *            dependency audit) could not complete
+ * FAILED   — the security engine itself could not produce a reliable result
+ */
+export type SecurityScanStatus = "CLEAN" | "FINDINGS" | "PARTIAL" | "FAILED";
+
+/** Category that classifies the nature of a security finding. */
+export type SecurityFindingCategory =
+  | "SECRET"
+  | "DEPENDENCY"
+  | "CODE"
+  | "CONFIGURATION"
+  | "AI_REVIEW";
+
+/** Severity of a security finding (does NOT imply a migration verdict). */
+export type SecurityFindingSeverity = "LOW" | "MEDIUM" | "HIGH" | "CRITICAL";
+
+/**
+ * Which scanner produced the finding.
+ * DETERMINISTIC — secret scanner or code/config pattern analysis
+ * DEPENDENCY_AUDIT — package-manager audit
+ * BOB — IBM Bob security review (advisory only)
+ */
+export type SecurityFindingSource = "DETERMINISTIC" | "DEPENDENCY_AUDIT" | "BOB";
+
+/** A single security finding with full evidence attribution. */
+export interface SecurityFinding {
+  /** Stable deterministic ID, e.g. "SEC-001". */
+  id: string;
+  category: SecurityFindingCategory;
+  severity: SecurityFindingSeverity;
+  title: string;
+  description: string;
+  /** Relative file path within the workspace (if file-specific). */
+  filePath?: string;
+  /** Line number within the file (if known). */
+  line?: number;
+  /** Evidence strings — MUST NOT contain raw secret values. */
+  evidence: string[];
+  source: SecurityFindingSource;
+  /** Optional remediation advice. */
+  recommendation?: string;
+}
+
+/** Status of a single security check phase. */
+export type SecurityCheckStatus = "PASSED" | "FINDINGS" | "SKIPPED" | "FAILED";
+
+/** Result of one named security check (e.g. "secret-scan", "dependency-audit"). */
+export interface SecurityCheckResult {
+  id: string;
+  name: string;
+  status: SecurityCheckStatus;
+  findingCount: number;
+  durationMs: number;
+  /** Human-readable reason when status is SKIPPED or FAILED. */
+  reason?: string;
+}
+
+/** Aggregate counts across all findings in a scan. */
+export interface SecuritySummary {
+  totalFindings: number;
+  critical: number;
+  high: number;
+  medium: number;
+  low: number;
+  secretsDetected: number;
+  dependencyFindings: number;
+  codeFindings: number;
+  configurationFindings: number;
+  aiReviewFindings: number;
+}
+
+/** Full result of a P15 security scan. */
+export interface SecurityScanResult {
+  workspaceId: string;
+  status: SecurityScanStatus;
+  findings: SecurityFinding[];
+  summary: SecuritySummary;
+  checks: SecurityCheckResult[];
+  startedAt: string;
+  completedAt: string;
+}
+
+/** Input to the P15 Security Engine. */
+export interface SecurityScanInput {
+  workspace: Workspace;
+  migrationPlan: MigrationPlan;
+  migrationResult: CodeMigrationResult;
+  testGenerationResult?: TestGenerationResult;
+  recoveryResult?: RecoveryResult;
+  unexpectedChanges?: UnexpectedChangeDetectionResult;
+}
