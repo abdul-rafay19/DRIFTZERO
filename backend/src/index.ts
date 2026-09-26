@@ -12,6 +12,7 @@ import riskScoreRouter from "./routes/risk-score.js";
 import impactPreviewRouter from "./routes/impact-preview.js";
 import migrationPlanRouter from "./routes/migration-plan.js";
 import codeMigrationRouter from "./routes/code-migration.js";
+import testGenerationRouter from "./routes/test-generation.js";
 
 const app = express();
 const port = process.env["PORT"] ?? "4000";
@@ -45,6 +46,7 @@ app.use("/api/risk-score", riskScoreRouter);
 app.use("/api/impact-preview", impactPreviewRouter);
 app.use("/api/migration-plan", migrationPlanRouter);
 app.use("/api/code-migration", codeMigrationRouter);
+app.use("/api/test-generation", testGenerationRouter);
 
 // 404 handler for unknown routes
 app.use((_req, res) => {

@@ -509,6 +509,47 @@ export interface ApiResponse<T = unknown> {
   code?: string;
 }
 
+// ---------------------------------------------------------------------------
+// Test Generation Agent types (P10)
+// ---------------------------------------------------------------------------
+
+/** A test file change applied by P10. */
+export interface TestChange {
+  stepId: string;
+  filePath: string;
+  operation: MigrationOperation;
+  explanation: string;
+  relatedChangeIds: string[];
+}
+
+/** Structured evidence record for every applied, rejected, or failed test change. */
+export interface TestChangeEvidence {
+  stepId: string;
+  filePath: string;
+  operation: MigrationOperation;
+  status: MigrationChangeStatus;
+  reason: string;
+  relatedChangeIds: string[];
+}
+
+/** Full result of a P10 test generation execution. */
+export interface TestGenerationResult {
+  workspaceId: string;
+  plannedTestChanges: number;
+  appliedTestChanges: number;
+  failedTestChanges: number;
+  status: "COMPLETED" | "FAILED";
+  changes: TestChange[];
+  evidence: TestChangeEvidence[];
+}
+
+/** Input to the Test Generation Agent. */
+export interface TestGenerationInput {
+  workspace: Workspace;
+  plan: MigrationPlan;
+  migrationResult: CodeMigrationResult;
+}
+
 export interface HealthResponse {
   status: "ok" | "degraded" | "down";
   uptime: number;
