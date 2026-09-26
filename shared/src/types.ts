@@ -635,3 +635,81 @@ export interface ValidationInput {
   /** P10 result — optional; provides context for evidence traceability. */
   testGenerationResult?: TestGenerationResult;
 }
+
+// ---------------------------------------------------------------------------
+// P12 — Autonomous Recovery Engine types
+// ---------------------------------------------------------------------------
+
+/** Overall status of a P12 recovery run. */
+export type RecoveryStatus =
+  | "RECOVERED"      // P11 passed after one or more repair attempts
+  | "NOT_NEEDED"     // P11 was already PASSED — no recovery required
+  | "FAILED"         // All attempts exhausted; P11 never passed
+  | "STOPPED";       // Attempt limit reached or unsafe condition detected
+
+/** Status of a single recovery attempt. */
+export type RecoveryAttemptStatus =
+  | "RECOVERED"   // This attempt resulted in P11 PASSED
+  | "FAILED"      // Repair applied but P11 still FAILED
+  | "REJECTED"    // Proposal was unsafe/unauthorized — no changes applied
+  | "STOPPED";    // Bob failed or limit reached — no changes applied
+
+/** A single file change within a repair proposal or applied result. */
+export interface RecoveryChange {
+  filePath: string;
+  operation: "MODIFY" | "CREATE";
+  explanation: string;
+  relatedStepIds: string[];
+  relatedValidationCheckIds: string[];
+}
+
+/** Bob's structured diagnosis and repair proposal for one attempt. */
+export interface RecoveryDiagnosis {
+  /** Short description of what Bob believes went wrong. */
+  diagnosis: string;
+  /** Root cause analysis from Bob (advisory — not proven). */
+  rootCause: string;
+  /** List of proposed file changes. */
+  proposedChanges: RecoveryChange[];
+  /** Bob's inference duration. */
+  bobDurationMs: number;
+}
+
+/** Full record of a single autonomous recovery attempt. */
+export interface RecoveryAttempt {
+  /** 1-based attempt number. */
+  attempt: number;
+  /** Bob's diagnosis and proposed repair. */
+  diagnosis: RecoveryDiagnosis;
+  /** Changes that were proposed by Bob. */
+  proposedChanges: RecoveryChange[];
+  /** Changes that were actually applied (empty if proposal was rejected). */
+  appliedChanges: RecoveryChange[];
+  /** P11 result after applying repair (or the original failure if rejected). */
+  validation: ValidationResult;
+  status: RecoveryAttemptStatus;
+  /** Human-readable reason for this attempt's outcome. */
+  reason: string;
+}
+
+/** Full result of a P12 recovery run. */
+export interface RecoveryResult {
+  workspaceId: string;
+  status: RecoveryStatus;
+  /** All attempted recovery rounds. */
+  attempts: RecoveryAttempt[];
+  /** The final P11 ValidationResult after all attempts. */
+  finalValidation?: ValidationResult;
+  /** Human-readable summary of the recovery outcome. */
+  reason: string;
+}
+
+/** Input to the P12 Autonomous Recovery Engine. */
+export interface RecoveryInput {
+  workspace: Workspace;
+  migrationPlan: MigrationPlan;
+  migrationResult: CodeMigrationResult;
+  testGenerationResult?: TestGenerationResult;
+  /** The P11 ValidationResult that triggered recovery. */
+  validationResult: ValidationResult;
+}
