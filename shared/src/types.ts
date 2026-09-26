@@ -556,3 +556,82 @@ export interface HealthResponse {
   version: string;
   timestamp: string;
 }
+
+// ---------------------------------------------------------------------------
+// P11 — Validation Engine types
+// ---------------------------------------------------------------------------
+
+/** The category of a validation check. */
+export type ValidationCheckType = "DEPENDENCY" | "TYPECHECK" | "BUILD" | "TEST";
+
+/**
+ * The outcome of a single validation check.
+ *
+ * PASSED        — command executed with exit code 0
+ * FAILED        — command executed with non-zero exit code or timed out
+ * NOT_APPLICABLE — no script or configuration exists for this check
+ * SKIPPED       — skipped because a prerequisite check failed
+ */
+export type ValidationCheckStatus = "PASSED" | "FAILED" | "NOT_APPLICABLE" | "SKIPPED";
+
+/** Structured result for one validation check. */
+export interface ValidationCheckResult {
+  /** Unique check identifier, e.g. "check-typecheck". */
+  id: string;
+  /** Category of this check. */
+  type: ValidationCheckType;
+  /** Outcome of the check. */
+  status: ValidationCheckStatus;
+  /** The command that was (or would have been) executed. */
+  command?: string;
+  /** Arguments passed to the command. */
+  args?: string[];
+  /** Process exit code (undefined if not applicable/skipped). */
+  exitCode?: number;
+  /** Captured stdout (may be truncated). */
+  stdout?: string;
+  /** Captured stderr (may be truncated). */
+  stderr?: string;
+  /** Execution duration in milliseconds. */
+  durationMs: number;
+  /** Human-readable explanation of the outcome. */
+  reason?: string;
+  /** Whether the captured output was truncated. */
+  truncated?: boolean;
+}
+
+/** Counts and summary across all checks in a validation run. */
+export interface ValidationSummary {
+  total: number;
+  passed: number;
+  failed: number;
+  notApplicable: number;
+  skipped: number;
+}
+
+/**
+ * The full result of a P11 validation run.
+ *
+ * status:
+ *   PASSED        — all required applicable checks passed
+ *   FAILED        — at least one required check failed
+ *   NOT_VALIDATED — engine could not establish validation (e.g. no checks applicable)
+ */
+export interface ValidationResult {
+  workspaceId: string;
+  status: "PASSED" | "FAILED" | "NOT_VALIDATED";
+  checks: ValidationCheckResult[];
+  summary: ValidationSummary;
+  startedAt: string;
+  completedAt: string;
+}
+
+/** Input to the P11 Validation Engine. */
+export interface ValidationInput {
+  workspace: Workspace;
+  migrationPlan: MigrationPlan;
+  /** P9 result — optional; provides context for evidence traceability. */
+  migrationResult?: CodeMigrationResult;
+  /** P10 result — optional; provides context for evidence traceability. */
+  testGenerationResult?: TestGenerationResult;
+}

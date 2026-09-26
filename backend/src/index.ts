@@ -13,6 +13,7 @@ import impactPreviewRouter from "./routes/impact-preview.js";
 import migrationPlanRouter from "./routes/migration-plan.js";
 import codeMigrationRouter from "./routes/code-migration.js";
 import testGenerationRouter from "./routes/test-generation.js";
+import validationRouter from "./routes/validation.js";
 
 const app = express();
 const port = process.env["PORT"] ?? "4000";
@@ -47,6 +48,7 @@ app.use("/api/impact-preview", impactPreviewRouter);
 app.use("/api/migration-plan", migrationPlanRouter);
 app.use("/api/code-migration", codeMigrationRouter);
 app.use("/api/test-generation", testGenerationRouter);
+app.use("/api/validation", validationRouter);
 
 // 404 handler for unknown routes
 app.use((_req, res) => {

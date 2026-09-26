@@ -20,7 +20,7 @@ import { CommandNotAllowedError, CommandTimeoutError } from "./workspace-errors.
 // Allowlist — only these executables may be invoked.
 // Extend this list as new phases require it; never add shell interpreters.
 // ---------------------------------------------------------------------------
-export const ALLOWED_COMMANDS = new Set<string>(["git", "npm", "node"]);
+export const ALLOWED_COMMANDS = new Set<string>(["git", "npm", "node", "pnpm", "yarn", "npx"]);
 
 /**
  * Check whether a command is on the allowlist.
