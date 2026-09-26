@@ -1,0 +1,75 @@
+.main {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  gap: 1.5rem;
+  font-family: -apple-system, "Segoe UI", system-ui, sans-serif;
+}
+
+.title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: #1f2328;
+  margin: 0;
+}
+
+.subtitle {
+  font-size: 1.1rem;
+  color: #57606a;
+  margin: 0;
+}
+
+.card {
+  margin-top: 1rem;
+  background: #f7f8fa;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 1.5rem 2rem;
+  min-width: 320px;
+  max-width: 480px;
+  width: 100%;
+}
+
+.cardTitle {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #1f2328;
+  margin: 0 0 1rem 0;
+}
+
+.loading {
+  color: #57606a;
+  font-size: 0.9rem;
+}
+
+.error {
+  color: #cf222e;
+  font-size: 0.9rem;
+}
+
+.healthGrid {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 0.5rem 1.5rem;
+  font-size: 0.9rem;
+}
+
+.healthGrid dt {
+  color: #57606a;
+  font-weight: 500;
+}
+
+.healthGrid dd {
+  color: #1f2328;
+  font-family: ui-monospace, monospace;
+}
+
+.statusOk {
+  color: #1a7f37;
+  font-weight: 600;
+  text-transform: uppercase;
+}
