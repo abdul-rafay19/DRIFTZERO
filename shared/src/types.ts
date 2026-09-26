@@ -449,6 +449,59 @@ export interface CreateMigrationRequest {
   targetVersion: string;
 }
 
+// ---------------------------------------------------------------------------
+// Code Migration Agent types (P9)
+// ---------------------------------------------------------------------------
+
+/** Status of a single file change produced by P9. */
+export type MigrationChangeStatus = "APPLIED" | "REJECTED" | "FAILED";
+
+/** A file operation proposed by IBM Bob and applied by P9. */
+export type MigrationOperation = "MODIFY" | "CREATE";
+
+/**
+ * A successfully applied file change.
+ * Traceable to the migration step that authorized it.
+ */
+export interface MigrationChange {
+  stepId: string;
+  filePath: string;
+  operation: MigrationOperation;
+  /** Bob's explanation of what was changed and why. */
+  explanation: string;
+}
+
+/**
+ * Structured evidence record for every applied, rejected, or failed change.
+ * Evidence answers: which step? which file? what operation? was it applied? why?
+ */
+export interface MigrationEvidence {
+  stepId: string;
+  filePath: string;
+  operation: MigrationOperation;
+  status: MigrationChangeStatus;
+  reason: string;
+}
+
+/** Full result of a P9 code migration execution. */
+export interface CodeMigrationResult {
+  workspaceId: string;
+  /** Total steps in the P8 plan. */
+  planSteps: number;
+  completedSteps: number;
+  failedSteps: number;
+  /** COMPLETED if all steps finished without error; FAILED otherwise. */
+  status: "COMPLETED" | "FAILED";
+  changes: MigrationChange[];
+  evidence: MigrationEvidence[];
+}
+
+/** Input to the Code Migration Agent. */
+export interface CodeMigrationInput {
+  workspace: Workspace;
+  plan: MigrationPlan;
+}
+
 export interface ApiResponse<T = unknown> {
   success: boolean;
   data?: T;
