@@ -247,6 +247,48 @@ export interface ImpactAnalysisInput {
   changeAnalysis: ChangeAnalysisResult;
 }
 
+// ---------------------------------------------------------------------------
+// Risk Score types (P6)
+// ---------------------------------------------------------------------------
+
+export type RiskLevel = "LOW" | "MEDIUM" | "HIGH" | "CRITICAL";
+
+/** A single scored contributing factor with evidence. */
+export interface RiskReason {
+  factor: string;
+  description: string;
+  /** Points contributed by this factor toward the total score. */
+  contribution: number;
+  evidence: string[];
+}
+
+/** Raw factor counts before scoring (for UI display). */
+export interface RiskFactors {
+  breakingChanges: number;
+  deprecatedApis: number;
+  affectedFiles: number;
+  affectedApis: number;
+  affectedDependencies: number;
+  affectedTests: number;
+  highRiskAreas: number;
+}
+
+/** The fully resolved risk assessment for a migration. */
+export interface RiskScoreResult {
+  /** Numeric score 0–100. */
+  score: number;
+  level: RiskLevel;
+  reasons: RiskReason[];
+  factors: RiskFactors;
+  assessedAt: string;
+}
+
+/** Input to the Risk Scoring Engine. */
+export interface RiskScoreInput {
+  changeAnalysis: ChangeAnalysisResult;
+  impactAnalysis: ImpactAnalysisResult;
+}
+
 export interface CreateMigrationRequest {
   repoUrl: string;
   sourceVersion: string;
