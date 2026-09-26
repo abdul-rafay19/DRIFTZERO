@@ -713,3 +713,77 @@ export interface RecoveryInput {
   /** The P11 ValidationResult that triggered recovery. */
   validationResult: ValidationResult;
 }
+
+// ---------------------------------------------------------------------------
+// P13 — Recovery Verification types
+// ---------------------------------------------------------------------------
+
+/** Identifies which structural invariant a verification check tests. */
+export type RecoveryVerificationCheckType =
+  | "INITIAL_FAILURE_CHECK"
+  | "ATTEMPT_SEQUENCE_CHECK"
+  | "ATTEMPT_LIMIT_CHECK"
+  | "CHANGE_SCOPE_CHECK"
+  | "CHANGE_EVIDENCE_CHECK"
+  | "EXPECTED_STATE_CHECK"
+  | "POST_REPAIR_VALIDATION_CHECK"
+  | "FINAL_STATUS_CHECK"
+  | "DUPLICATE_REPAIR_CHECK"
+  | "RECOVERY_CONSISTENCY_CHECK";
+
+/** Outcome of a single verification check. */
+export type RecoveryVerificationCheckStatus = "PASSED" | "FAILED";
+
+/** Structured result for one verification check. */
+export interface RecoveryVerificationCheck {
+  /** Unique check ID within this verification run, e.g. "vc-final-status". */
+  id: string;
+  /** Which structural invariant this check tests. */
+  type: RecoveryVerificationCheckType;
+  /** Outcome of this check. */
+  status: RecoveryVerificationCheckStatus;
+  /** Human-readable description of what was checked and what was found. */
+  message: string;
+  /** Supporting evidence references (file paths, attempt numbers, etc.). */
+  evidence?: string[];
+}
+
+/**
+ * Overall status of a P13 verification run.
+ *
+ * VERIFIED      — all checks passed; recovery evidence is complete and consistent
+ * NOT_REQUIRED  — initial validation was already PASSED; no recovery was needed
+ * FAILED        — evidence is missing, contradictory, or insufficient
+ */
+export type RecoveryVerificationStatus = "VERIFIED" | "NOT_REQUIRED" | "FAILED";
+
+/** Full result of a P13 recovery verification run. */
+export interface RecoveryVerificationResult {
+  status: RecoveryVerificationStatus;
+  /** The P12 status that was verified (or NOT_NEEDED). */
+  recoveryStatus: RecoveryStatus;
+  /** All checks executed, in deterministic order. */
+  checks: RecoveryVerificationCheck[];
+  /** The final P11 ValidationResult from the recovery process (if present). */
+  finalValidation?: ValidationResult;
+  /** Number of P12 recovery attempts verified. */
+  verifiedAttempts: number;
+  /** Total number of applied recovery changes verified. */
+  verifiedChanges: number;
+  /** All error messages from failed checks. */
+  errors: string[];
+  /** Human-readable summary of the verification outcome. */
+  summary: string;
+}
+
+/** Input to the P13 Recovery Verification engine. */
+export interface RecoveryVerificationInput {
+  workspace: Workspace;
+  migrationPlan: MigrationPlan;
+  migrationResult: CodeMigrationResult;
+  testGenerationResult?: TestGenerationResult;
+  /** The initial P11 ValidationResult before any recovery. */
+  initialValidation: ValidationResult;
+  /** The full P12 RecoveryResult to be verified. */
+  recoveryResult: RecoveryResult;
+}
