@@ -92,6 +92,83 @@ export interface CleanupResult {
   error?: string;
 }
 
+// ---------------------------------------------------------------------------
+// Change Analysis types
+// ---------------------------------------------------------------------------
+
+export type ChangeSeverity = "low" | "medium" | "high" | "critical";
+
+export interface BreakingChange {
+  id: string;
+  title: string;
+  description: string;
+  severity: ChangeSeverity;
+  affectedArea?: string;
+  migrationRequired: boolean;
+}
+
+export interface DeprecatedApi {
+  id: string;
+  apiName: string;
+  description: string;
+  replacement?: string;
+  removedInVersion?: string;
+}
+
+export interface BehaviorChange {
+  id: string;
+  title: string;
+  description: string;
+  severity: ChangeSeverity;
+  affectedArea?: string;
+}
+
+export interface MigrationRequirement {
+  id: string;
+  title: string;
+  description: string;
+  mandatory: boolean;
+}
+
+export interface MigrationPattern {
+  id: string;
+  title: string;
+  description: string;
+  before?: string;
+  after?: string;
+}
+
+/** Full structured result from the Change Analysis Agent. */
+export interface ChangeAnalysisResult {
+  packageName: string;
+  sourceVersion: string;
+  targetVersion: string;
+  summary: string;
+  breakingChanges: BreakingChange[];
+  deprecatedApis: DeprecatedApi[];
+  behaviorChanges: BehaviorChange[];
+  migrationRequirements: MigrationRequirement[];
+  migrationPatterns: MigrationPattern[];
+  compatibilityNotes: string[];
+  /** ISO timestamp of when the analysis was performed. */
+  analyzedAt: string;
+  /** Metadata for future evidence/traceability use. */
+  meta: ChangeAnalysisMeta;
+}
+
+/** Traceability metadata attached to every analysis. */
+export interface ChangeAnalysisMeta {
+  bobDurationMs: number;
+  promptLength: number;
+}
+
+/** Input to the Change Analysis Agent. */
+export interface ChangeAnalysisInput {
+  packageName: string;
+  sourceVersion: string;
+  targetVersion: string;
+}
+
 export interface CreateMigrationRequest {
   repoUrl: string;
   sourceVersion: string;
