@@ -289,6 +289,74 @@ export interface RiskScoreInput {
   impactAnalysis: ImpactAnalysisResult;
 }
 
+// ---------------------------------------------------------------------------
+// Impact Preview types (P7)
+// ---------------------------------------------------------------------------
+
+/**
+ * Source phase that produced a preview finding.
+ * Enables full traceability: preview item → P4/P5 finding → raw evidence.
+ */
+export type PreviewSource = "CHANGE_ANALYSIS" | "IMPACT_ANALYSIS" | "RISK_SCORE";
+
+/**
+ * A single evidence-backed finding in the impact preview.
+ *
+ * Language is predictive ("may require", "potentially affected") — not
+ * declarative ("this is broken"). The preview runs before migration.
+ */
+export interface PreviewItem {
+  /** Short human-readable title. */
+  title: string;
+  /** Predictive description of the impact. */
+  description: string;
+  /** Severity inherited from the upstream P4/P5 finding, if applicable. */
+  severity?: ChangeSeverity;
+  /** Which upstream phase produced this finding. */
+  source: PreviewSource;
+  /** Raw evidence strings (IDs, file paths, API names) backing this item. */
+  evidence: string[];
+  /** Source file associated with this finding, if applicable. */
+  file?: string;
+}
+
+/** Ordered, evidence-backed "What Will Break?" preview. */
+export interface ImpactPreviewResult {
+  packageName: string;
+  sourceVersion: string;
+  targetVersion: string;
+
+  /** P6 risk score and level — passed through unchanged, never recalculated. */
+  risk: {
+    score: number;
+    level: RiskLevel;
+  };
+
+  /** Deterministic code-generated summary — never AI-generated. */
+  summary: string;
+
+  // Ordered categories (spec §8)
+  breakingChanges: PreviewItem[];
+  deprecatedApis: PreviewItem[];
+  highRiskAreas: PreviewItem[];
+  affectedApis: PreviewItem[];
+  affectedFiles: PreviewItem[];
+  affectedDependencies: PreviewItem[];
+  affectedTests: PreviewItem[];
+  affectedConfigs: PreviewItem[];
+  behaviorChanges: PreviewItem[];
+
+  /** ISO timestamp when the preview was generated. */
+  generatedAt: string;
+}
+
+/** Input to the Impact Preview Engine. */
+export interface ImpactPreviewInput {
+  changeAnalysis: ChangeAnalysisResult;
+  impactAnalysis: ImpactAnalysisResult;
+  riskScore: RiskScoreResult;
+}
+
 export interface CreateMigrationRequest {
   repoUrl: string;
   sourceVersion: string;

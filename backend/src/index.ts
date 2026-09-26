@@ -9,6 +9,7 @@ import bobRouter from "./routes/bob.js";
 import changeAnalysisRouter from "./routes/change-analysis.js";
 import impactAnalysisRouter from "./routes/impact-analysis.js";
 import riskScoreRouter from "./routes/risk-score.js";
+import impactPreviewRouter from "./routes/impact-preview.js";
 
 const app = express();
 const port = process.env["PORT"] ?? "4000";
@@ -39,6 +40,7 @@ app.use("/api/bob", bobRouter);
 app.use("/api/change-analysis", changeAnalysisRouter);
 app.use("/api/impact-analysis", impactAnalysisRouter);
 app.use("/api/risk-score", riskScoreRouter);
+app.use("/api/impact-preview", impactPreviewRouter);
 
 // 404 handler for unknown routes
 app.use((_req, res) => {
