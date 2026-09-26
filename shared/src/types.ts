@@ -169,6 +169,84 @@ export interface ChangeAnalysisInput {
   targetVersion: string;
 }
 
+// ---------------------------------------------------------------------------
+// Impact Analysis types (P5)
+// ---------------------------------------------------------------------------
+
+export type AffectedFileCategory =
+  | "API"
+  | "ROUTE"
+  | "MIDDLEWARE"
+  | "CONTROLLER"
+  | "TEST"
+  | "DEPENDENCY"
+  | "CONFIG"
+  | "OTHER";
+
+export interface AffectedFile {
+  path: string;
+  category: AffectedFileCategory;
+  reason: string;
+  relevance: "direct" | "indirect";
+  evidence: string[];
+}
+
+export interface AffectedApi {
+  file: string;
+  symbol?: string;
+  api: string;
+  reason: string;
+  /** References a MigrationRequirement.id from the P4 ChangeAnalysisResult */
+  migrationRequirementId?: string;
+}
+
+export interface AffectedDependency {
+  name: string;
+  declaredVersion: string;
+  dependencyType: "dependencies" | "devDependencies" | "peerDependencies" | "optionalDependencies";
+  packageManager: "npm" | "pnpm" | "yarn" | "unknown";
+  reason: string;
+}
+
+export interface AffectedTest {
+  path: string;
+  reason: string;
+  evidence: string[];
+}
+
+export interface AffectedConfig {
+  path: string;
+  reason: string;
+}
+
+export interface HighRiskArea {
+  title: string;
+  description: string;
+  files: string[];
+}
+
+export interface ImpactAnalysisResult {
+  packageName: string;
+  sourceVersion: string;
+  targetVersion: string;
+  affectedFiles: AffectedFile[];
+  affectedApis: AffectedApi[];
+  affectedDependencies: AffectedDependency[];
+  affectedTests: AffectedTest[];
+  affectedConfigs: AffectedConfig[];
+  highRiskAreas: HighRiskArea[];
+  summary: string;
+  analyzedAt: string;
+}
+
+export interface ImpactAnalysisInput {
+  workspacePath: string;
+  packageName: string;
+  sourceVersion: string;
+  targetVersion: string;
+  changeAnalysis: ChangeAnalysisResult;
+}
+
 export interface CreateMigrationRequest {
   repoUrl: string;
   sourceVersion: string;
