@@ -44,6 +44,54 @@ export interface MigrationJob {
   updatedAt: string;
 }
 
+// ---------------------------------------------------------------------------
+// Workspace types
+// ---------------------------------------------------------------------------
+
+/** Lifecycle status of an isolated migration workspace. */
+export type WorkspaceStatus =
+  | "CREATING"
+  | "READY"
+  | "CLEANING"
+  | "CLEANED"
+  | "FAILED";
+
+/** A controlled temporary directory that holds a cloned repository. */
+export interface Workspace {
+  /** Unique workspace identifier, e.g. ws_<uuid> */
+  id: string;
+  /** Source repository URL (or local path) that was cloned. */
+  repoUrl: string;
+  /** Absolute path to the isolated workspace directory on disk. */
+  path: string;
+  /** Git branch checked out inside the workspace, if any. */
+  branch: string | null;
+  /** ISO timestamp when the workspace was created. */
+  createdAt: string;
+  /** Current lifecycle status. */
+  status: WorkspaceStatus;
+}
+
+/** Structured result of a controlled command execution. */
+export interface CommandResult {
+  command: string;
+  args: string[];
+  exitCode: number;
+  stdout: string;
+  stderr: string;
+  durationMs: number;
+  timedOut: boolean;
+}
+
+/** Result returned by a workspace cleanup operation. */
+export interface CleanupResult {
+  workspaceId: string;
+  path: string;
+  success: boolean;
+  alreadyCleaned: boolean;
+  error?: string;
+}
+
 export interface CreateMigrationRequest {
   repoUrl: string;
   sourceVersion: string;
