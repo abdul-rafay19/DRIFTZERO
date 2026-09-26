@@ -975,3 +975,86 @@ export interface SecurityScanInput {
   recoveryResult?: RecoveryResult;
   unexpectedChanges?: UnexpectedChangeDetectionResult;
 }
+
+// ---------------------------------------------------------------------------
+// P16 — Migration Safety Gate types
+// ---------------------------------------------------------------------------
+
+/**
+ * The authoritative migration safety decision.
+ *
+ * SAFE_TO_PROCEED — all mandatory safety checks passed; migration may advance
+ * STOP_SAFELY     — one or more checks failed; migration must halt
+ */
+export type SafetyDecision = "SAFE_TO_PROCEED" | "STOP_SAFELY";
+
+/** The outcome of a single deterministic safety check. */
+export type SafetyCheckStatus = "PASS" | "FAIL" | "NOT_VERIFIED";
+
+/** Severity of a safety reason — used to distinguish blocking vs advisory. */
+export type SafetyReasonSeverity = "ERROR" | "WARNING";
+
+/** A deterministic safety check result. */
+export interface SafetyCheckResult {
+  /** Stable check identifier, e.g. "SG-001". */
+  id: string;
+  /** Human-readable check name. */
+  name: string;
+  /** Outcome of this check. */
+  status: SafetyCheckStatus;
+  /** Whether this check, if FAIL/NOT_VERIFIED, blocks SAFE_TO_PROCEED. */
+  blocking: boolean;
+  /** Human-readable reason for this status. */
+  reason: string;
+  /** Supporting evidence items (must NOT contain secret values). */
+  evidence: string[];
+}
+
+/** A structured safety reason (blocking or advisory). */
+export interface SafetyReason {
+  /** Stable reason code, e.g. "VALIDATION_FAILED". */
+  code: string;
+  severity: SafetyReasonSeverity;
+  title: string;
+  message: string;
+  /** Supporting evidence items. */
+  evidence: string[];
+}
+
+/** Aggregate counts for the safety gate summary. */
+export interface SafetySummary {
+  totalChecks: number;
+  passed: number;
+  failed: number;
+  notVerified: number;
+  blockingReasonCount: number;
+  warningCount: number;
+}
+
+/** Full result of a P16 safety gate evaluation. */
+export interface SafetyGateResult {
+  workspaceId: string;
+  decision: SafetyDecision;
+  /** All safety checks in stable SG-001 … SG-005 order. */
+  checks: SafetyCheckResult[];
+  /** Reasons that caused STOP_SAFELY. Empty when SAFE_TO_PROCEED. */
+  blockingReasons: SafetyReason[];
+  /** Advisory warnings that do not block progression. */
+  warnings: SafetyReason[];
+  summary: SafetySummary;
+}
+
+/** Input to the P16 Safety Gate. */
+export interface SafetyGateInput {
+  workspaceId: string;
+  /** P11 authoritative validation result. */
+  validation: ValidationResult;
+  /** P13 authoritative recovery verification result. */
+  recoveryVerification: RecoveryVerificationResult;
+  /** P14 authoritative unexpected-change detection result. */
+  unexpectedChanges: UnexpectedChangeDetectionResult;
+  /** P15 authoritative security scan result. */
+  security: SecurityScanResult;
+  /** Optional: P8 migration plan (for context/evidence traceability). */
+  migrationPlan?: MigrationPlan;
+}

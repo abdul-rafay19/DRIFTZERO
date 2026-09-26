@@ -18,6 +18,7 @@ import recoveryRouter from "./routes/recovery.js";
 import recoveryVerificationRouter from "./routes/recovery-verification.js";
 import unexpectedChangesRouter from "./routes/unexpected-changes.js";
 import securityRouter from "./routes/security.js";
+import safetyGateRouter from "./routes/safety-gate.js";
 
 const app = express();
 const port = process.env["PORT"] ?? "4000";
@@ -57,6 +58,7 @@ app.use("/api/recovery", recoveryRouter);
 app.use("/api/recovery-verification", recoveryVerificationRouter);
 app.use("/api/unexpected-changes", unexpectedChangesRouter);
 app.use("/api/security", securityRouter);
+app.use("/api/safety-gate", safetyGateRouter);
 
 // 404 handler for unknown routes
 app.use((_req, res) => {
