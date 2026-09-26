@@ -8,6 +8,7 @@
     "dev:backend": "pnpm --filter backend dev",
     "build": "pnpm -r run build",
     "lint": "pnpm -r run lint",
-    "typecheck": "pnpm -r run typecheck"
+    "typecheck": "pnpm -r run typecheck",
+    "bob:test": "pnpm --filter backend bob:test"
   }
 }

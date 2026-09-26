@@ -5,6 +5,7 @@ import { logger } from "./utils/logger.js";
 import { errorHandler } from "./middleware/errorHandler.js";
 import healthRouter from "./routes/health.js";
 import migrationsRouter from "./routes/migrations.js";
+import bobRouter from "./routes/bob.js";
 
 const app = express();
 const port = process.env["PORT"] ?? "4000";
@@ -31,6 +32,7 @@ app.use((req, _res, next) => {
 // Routes
 app.use("/api/health", healthRouter);
 app.use("/api/migrations", migrationsRouter);
+app.use("/api/bob", bobRouter);
 
 // 404 handler for unknown routes
 app.use((_req, res) => {
