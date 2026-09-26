@@ -1058,3 +1058,189 @@ export interface SafetyGateInput {
   /** Optional: P8 migration plan (for context/evidence traceability). */
   migrationPlan?: MigrationPlan;
 }
+
+// ---------------------------------------------------------------------------
+// P17 — Diff Intelligence types
+// ---------------------------------------------------------------------------
+
+/** Overall status of a P17 diff intelligence analysis. */
+export type DiffIntelligenceStatus = "ANALYZED" | "PARTIAL" | "FAILED";
+
+/** How a file was changed in the migration workspace. */
+export type DiffChangeType = "ADDED" | "MODIFIED" | "DELETED" | "RENAMED";
+
+/** Broad category of a changed file. */
+export type DiffFileCategory =
+  | "SOURCE"
+  | "TEST"
+  | "CONFIG"
+  | "DEPENDENCY"
+  | "DOCUMENTATION"
+  | "OTHER";
+
+/** Semantic category of a diff change, derived from evidence. */
+export type DiffChangeCategory =
+  | "DEPENDENCY"
+  | "API"
+  | "MIDDLEWARE"
+  | "ROUTE"
+  | "CONFIGURATION"
+  | "TEST"
+  | "SOURCE"
+  | "SECURITY_RELEVANT"
+  | "OTHER";
+
+/** Which phase authorized or originated this change. */
+export type DiffChangeOrigin =
+  | "MIGRATION"
+  | "TEST_GENERATION"
+  | "RECOVERY"
+  | "OTHER"
+  | "UNKNOWN";
+
+/** Correlation type: was the file explicitly correlated to a plan step? */
+export type DiffCorrelationType = "CORRELATED" | "UNCORRELATED";
+
+/** A single parsed diff hunk header. */
+export interface DiffHunk {
+  oldStart: number;
+  oldCount: number;
+  newStart: number;
+  newCount: number;
+  /** Changed lines in this hunk (additions/deletions only, bounded). */
+  lines: string[];
+}
+
+/** Per-file analysis from the diff. */
+export interface DiffFileAnalysis {
+  filePath: string;
+  changeType: DiffChangeType;
+  /** For RENAMED files: original path. */
+  oldPath?: string;
+  additions: number;
+  deletions: number;
+  hunks: number;
+  category: DiffFileCategory;
+  /** Whether this file is attributable to the migration (from evidence). */
+  migrationRelated: boolean;
+  /** Whether this file was flagged as unexpected by P14. */
+  unexpected: boolean;
+  /** P8 plan step IDs that list this file in affectedFiles. */
+  relatedPlanSteps: string[];
+  /** Human-readable evidence references for this file. */
+  relatedEvidence: string[];
+  /** Whether this file had binary content in the diff. */
+  binary: boolean;
+  /** Whether this file's diff was truncated due to size limits. */
+  truncated: boolean;
+}
+
+/** A single meaningful change item. */
+export interface DiffChange {
+  /** Stable sequential ID, e.g. "DIFF-001". */
+  id: string;
+  filePath: string;
+  type: "ADDITION" | "DELETION" | "MODIFICATION";
+  category: DiffChangeCategory;
+  /** Line number (1-based) within the file, if determinable. */
+  line?: number;
+  /**
+   * Bounded content of the changed line — redacted if secret-like.
+   * Maximum 200 characters.
+   */
+  content?: string;
+  /** Which phase authorized this change. */
+  origin: DiffChangeOrigin;
+  /** P8 plan step IDs related to this change. */
+  relatedPlanSteps: string[];
+  /** Human-readable evidence. */
+  evidence: string[];
+}
+
+/** Cross-phase correlation record for one changed file. */
+export interface DiffCorrelation {
+  filePath: string;
+  correlationType: DiffCorrelationType;
+  /** P8 plan step IDs. */
+  planStepIds: string[];
+  /** P9 migration change evidence keys (e.g. "STEP-001:src/app.ts"). */
+  migrationEvidenceIds: string[];
+  /** P10 test generation change evidence keys. */
+  testEvidenceIds: string[];
+  /** P12 recovery change evidence keys. */
+  recoveryEvidenceIds: string[];
+  /** P15 security finding IDs correlated to this file. */
+  securityFindingIds: string[];
+  /** Whether P14 flagged this file as unexpected. */
+  unexpectedChange: boolean;
+  origin: DiffChangeOrigin;
+}
+
+/** Aggregate numeric statistics. */
+export interface DiffStatistics {
+  filesChanged: number;
+  filesAdded: number;
+  filesModified: number;
+  filesDeleted: number;
+  filesRenamed: number;
+  totalAdditions: number;
+  totalDeletions: number;
+  sourceFilesChanged: number;
+  testFilesChanged: number;
+  configFilesChanged: number;
+  dependencyFilesChanged: number;
+  unexpectedFiles: number;
+  migrationRelatedFiles: number;
+  uncorrelatedFiles: number;
+}
+
+/** Human-readable deterministic summary. */
+export interface DiffSummary {
+  filesChanged: number;
+  totalAdditions: number;
+  totalDeletions: number;
+  migrationRelatedFiles: number;
+  testFilesChanged: number;
+  dependencyFilesChanged: number;
+  uncorrelatedFiles: number;
+  unexpectedFiles: number;
+  /** Whether any files were truncated due to limits. */
+  truncated: boolean;
+  /** The P16 safety decision, if supplied (contextual — not P17's own decision). */
+  safetyDecision?: SafetyDecision;
+}
+
+/** Contextual evidence reference. */
+export interface DiffEvidence {
+  source: "P8" | "P9" | "P10" | "P12" | "P14" | "P15" | "P16" | "GIT";
+  id: string;
+  description: string;
+}
+
+/** Full result of a P17 diff intelligence analysis. */
+export interface DiffIntelligenceResult {
+  workspaceId: string;
+  status: DiffIntelligenceStatus;
+  summary: DiffSummary;
+  files: DiffFileAnalysis[];
+  changes: DiffChange[];
+  correlations: DiffCorrelation[];
+  statistics: DiffStatistics;
+  evidence: DiffEvidence[];
+  /** ISO timestamp when analysis ran. */
+  analyzedAt: string;
+  /** Human-readable reason if status is PARTIAL or FAILED. */
+  reason?: string;
+}
+
+/** Input to the P17 Diff Intelligence engine. */
+export interface DiffIntelligenceInput {
+  workspace: Workspace;
+  migrationPlan?: MigrationPlan;
+  migrationResult?: CodeMigrationResult;
+  testGenerationResult?: TestGenerationResult;
+  recoveryResult?: RecoveryResult;
+  unexpectedChanges?: UnexpectedChangeDetectionResult;
+  safetyGate?: SafetyGateResult;
+  security?: SecurityScanResult;
+}
