@@ -2,6 +2,7 @@
   "name": "driftzero",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "scripts": {
     "dev": "pnpm --parallel -r run dev",
     "dev:frontend": "pnpm --filter frontend dev",
