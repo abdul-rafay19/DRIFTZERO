@@ -13,11 +13,7 @@ export default function HomePage() {
   const [connection, setConnection] = useState<ConnectionState>({ phase: "loading" });
 
   useEffect(() => {
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? ""; // empty = same-origin
-    if (!apiUrl) {
-      setConnection({ phase: "error", message: "NEXT_PUBLIC_API_URL is not configured." });
-      return;
-    }
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? ""; // empty = same-origin (Vercel Services routing)
 
     fetch(`${apiUrl}/api/health`)
       .then((res) => res.json() as Promise<ApiResponse<HealthResponse>>)
